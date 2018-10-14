@@ -365,6 +365,7 @@ fix_upstream_rebase()
 			if yesno "Probable upstream rebase detected, automatically fix?" 'git log --oneline --graph --date-order --left-right "$r_other"..."$r_me"'; then
 				git reset --hard "$r_me"
 				git pull --rebase
+				git submodule update --init --recursive
 				return 1
 			fi
 		fi
@@ -637,6 +638,7 @@ case "$cmd" in
 						else
 							( cd "$d0" && git config xonotic.all.mirrorselection "$o" )
 							fix_upstream_rebase_mergeok || true
+							verbose git submodule update --init --recursive
 						fi
 					fi
 
@@ -657,7 +659,7 @@ case "$cmd" in
 				fi
 				o=`git config xonotic.all.mirrorselection 2>/dev/null || true`
 				git config xonotic.all.mirrorselection try_same
-				verbose git clone --branch "$branch" "$url" "$d0/$d"
+				verbose git clone --recurse-submodules --branch "$branch" "$url" "$d0/$d"
 				git config xonotic.all.mirrorselection "$o"
 				enter "$d0/$d" verbose
 				fix_git_config "$url" "$pushurl"
@@ -698,9 +700,11 @@ case "$cmd" in
 			if [ -n "$b" ] && git rev-parse "refs/heads/$b" >/dev/null 2>&1; then
 				exists=true
 				verbose git checkout $checkoutflags "$b"
+				verbose git submodule update --init --recursive
 			elif [ -n "$b" ] && git rev-parse "refs/remotes/$remote/$b" >/dev/null 2>&1; then
 				exists=true
 				verbose git checkout $checkoutflags --track -b "$b" "$remote/$b"
+				verbose git submodule update --init --recursive
 			else
 				b=$branch
 				if git rev-parse "refs/heads/$b" >/dev/null 2>&1; then
